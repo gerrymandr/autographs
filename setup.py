@@ -4,7 +4,9 @@ from graph_tools import VERSION
 
 reqs = [
     "networkx",
-    "numpy"
+    "numpy",
+    "pysal",
+    "geopandas"
 ]
 
 setup(
@@ -13,6 +15,9 @@ setup(
     author="Metric Geometry and Gerrymandering Group",
     author_email="gerrymandr@gmail.com",
     url="https://github.com/gerrymandr/graph_tools",
-    packages=["graph_tools"],
+    packages=[
+        "graph_tools",
+        "graph_tools.faces"
+        ],
     version=VERSION
 )
