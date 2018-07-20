@@ -3,7 +3,6 @@ from setuptools import setup
 from graph_tools import VERSION
 
 reqs = [
-    "networkx",
     "numpy",
     "pysal",
     "geopandas"
