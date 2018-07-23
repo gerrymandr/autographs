@@ -2,6 +2,7 @@
 import geopandas as gpd
 import pysal as ps
 import numpy as np
+import matplotlib.pyplot as plt
 from collections import deque
 
 
@@ -183,7 +184,6 @@ class HalfEdge:
             ordered = sorted(unordered, key=lambda n: n[1])
             self.adjacency[vertex] = tuple([tup[0] for tup in ordered])
 
-        # Add proper `next` pointers to the edges in the graph.
         self._edge_pointers()
 
     def _get_next_neighbor(self, current, neighbor):
@@ -214,8 +214,8 @@ class HalfEdge:
         # pick a random edge and see which face it bounds.
         for vertex in self.adjacency:
             for neighbor in self.adjacency[vertex]:
-                # If this edge has already been traversed, burn it to the ground.
-                # Abandon ship. ~Beware, ye who enter here~.
+                # If this edge has already been traversed, burn the program to
+                # the ground. Abandon ship. ~Beware, ye who enter here.~
                 if vertex.edges[neighbor].traversed:
                     break
 
@@ -228,6 +228,7 @@ class HalfEdge:
                 cycle = []
                 edges = []
 
+                # Keep going until we reach the start.
                 while current is not vertex:
                     if current is None:
                         current = vertex
@@ -237,7 +238,7 @@ class HalfEdge:
 
                     # Add the current neighbor to the cycle.
                     cycle.append(current_neighbor)
-                    
+
                     # Reset the tracking variables.
                     current = current_neighbor
                     current_neighbor = next_neighbor
@@ -257,18 +258,49 @@ class HalfEdge:
                     # edge at index `j+1`.
                     edges[j].next = edges[(j + 1) % len(edges)]
 
+                # Assign the faces!
+                current_edge = None
+                face = []
 
-    def determine_faces(self):
-        """
-        Finds the faces of the graph.
-        :returns: None
-        """
-        pass
+                while current_edge is not edges[0]:
+                    # Gotta have a starting point!
+                    if current_edge is None:
+                        current_edge = edges[0]
+
+                    # Otherwise, denote the edges.
+                    tl, hl = current_edge.tail.label, current_edge.head.label
+                    face.append((tl, hl))
+
+                    # Sweet jesus I spent *such* a long time trying to figure out
+                    # why my code wouldn't finish running... and then I realized
+                    # I didn't do this. Update the current_edge pointer.
+                    current_edge = current_edge.next
+
+                # Append the faces!
+                self.faces.append(face)
 
     def show_map(self):
+        """
+        Shows the underlying map overlaid with the dual graph.
+        :returns:   None
+        """
+        # Set the base map to be whatever the shapefile bounds, then plot all
+        # the centroids.
         basemap = self.df.plot(color="w", edgecolor="lightgray")
         self.centroids.plot(ax=basemap, markersize=1)
+
+        # Iterate over the adjacency matrix, and plot lines from each centroid
+        # to neighboring centroids.
+        for vertex in self.adjacency:
+            for neighbor in self.adjacency[vertex]:
+                basemap.plot([vertex.x, neighbor.x], [vertex.y, neighbor.y], linestyle="-", linewidth=1)
+
+        # Don't forget to show the plot!
+        plt.show()        
 
 
 if __name__ == "__main__":
     he = HalfEdge("../test/data/2018_19_counties/county.shp")
+    for face in he.faces:
+        print(face)
+    he.show_map()
