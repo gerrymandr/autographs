@@ -17,24 +17,23 @@ class Vertex:
 
         """
         Properties.
-        :label: Label of the vertex.
+        :label:     Label of the vertex.
         :point:     Where this vertex has been mapped to in an embedding.
         :data:      Any data associated with this vertex.
-        :edges:     Set of outgoing edges from this vertex.
+        :edges:     Dict of outgoing edges from this vertex, keyed by neighbor.
         """
         self.label = label
         self.point = point
         self.data = data
+        self.edges = {}
 
-        self.edges = deque()
-
-    def addEdge(self, edge):
+    def add_edge(self, v):
         """
         Add an outgoing edge to this vertex.
-        :edge:      Edge object with this vertex as the tail.
+        :v:         Head of the edge.
         :returns:   None
         """
-        self.edges.append(edge)
+        self.edges[v] = Edge(self, v)
 
     @property
     def x(self):
@@ -76,6 +75,13 @@ class Vertex:
         """
         return hash((self.label, self.point))
 
+    def __str__(self):
+        """
+        String representation of the Vertex.
+        :returns: String containing the label of the vertex.
+        """
+        return str(self.label)
+
 
 class Edge:
     def __init__(self, tail, head):
@@ -91,10 +97,12 @@ class Edge:
         :tail:      Starting vertex of this edge.
         :head:      Ending vertex of this edge.
         :traversed: Has this edge been traversed yet?
+        :next:      Points to the next edge in the cyclic ordering.
         """
         self.tail = tail
         self.head = head
         self.traversed = False
+        self.next = None
 
     def __eq__(self, other):
         """
@@ -103,6 +111,21 @@ class Edge:
         :returns:   Boolean; are `self` and `other` the same?
         """
         return self.tail == other.tail and self.head == other.head
+
+    def __str__(self):
+        """
+        String reperesentation of the edge.
+        :returns:   A tuple containing the two labels of the vertices at `head` and
+                    `tail`.
+        """
+        return str((self.tail.label, self.head.label))
+
+    def __hash__(self):
+        """
+        Implements a hashing method to store edges in sets.
+        :returns: Edge hashed on a (tail, head) tuple.
+        """
+        return hash((self.tail, self.head))
 
 
 class HalfEdge:
@@ -115,19 +138,25 @@ class HalfEdge:
 
         """
         Properties.
-        :_adjacency:    Adjacency matrix with each vertex's neighbors ordered
-                        (by angle with respect to the ray (0,1)).
+        :adjacency:     Adjacency matrix with each vertex's neighbors ordered
+                        (by angle, with respect to the ray (0,1)).
+        :faces:         Faces of the graph, denoted by edges.
+        :centroids:     List of centroids.
+        :df:            DataFrame for (insert block)-level data.
         """
         self.adjacency = {}
+        self.faces = []
+        self.centroids = None
+        self.df = None
 
         # Get the file and create vertices (and their adjacencies).
-        df = gpd.read_file(path)
-        contiguity = ps.weights.Contiguity.Rook.from_dataframe(df)
-        centroids = df.centroid
+        self.df = gpd.read_file(path)
+        contiguity = ps.weights.Contiguity.Rook.from_dataframe(self.df)
+        self.centroids = self.df.centroid
 
         # Initialize vertices.
         for label, _ in enumerate(contiguity):
-            x, y = centroids[label].xy
+            x, y = self.centroids[label].xy
             v = Vertex(label, (x[0], y[0]))
             self.adjacency[v] = None
 
@@ -141,10 +170,6 @@ class HalfEdge:
             for uncoded_neighbor in contiguity[index].keys():
                 # Get the correct neighbor.
                 neighbor = list(self.adjacency.keys())[uncoded_neighbor]
-
-                # Create a new Edge object and mark that it hasn't been traversed.
-                e = Edge(vertex, neighbor)
-                vertex.addEdge(e)
                 
                 # Find the angle between `vertex` and `neighbor`. Basically just
                 # took this code from Eugene.
@@ -157,7 +182,93 @@ class HalfEdge:
             # tuple, then stick it in the adjacency matrix.
             ordered = sorted(unordered, key=lambda n: n[1])
             self.adjacency[vertex] = tuple([tup[0] for tup in ordered])
-   
+
+        # Add proper `next` pointers to the edges in the graph.
+        self._edge_pointers()
+
+    def _get_next_neighbor(self, current, neighbor):
+        """
+        Returns the proper next neighbor in the cyclic ordering.
+        :current:   Current vertex.
+        :neighbor:  Current neighbor; from here, we want to figure out
+                    where to go next.
+        :return:    Vertex; proper neighbor in the ordering.
+        """
+        ordered_neighbors = self.adjacency[neighbor]
+        index_from = ordered_neighbors.index(current)
+        return ordered_neighbors[(index_from + 1) % len(ordered_neighbors)]
+
+    def _edge_pointers(self):
+        """
+        Sets the `next` pointer for each edge.
+        :returns: None
+        """
+        # Add all the outgoing edges to their respective vertices' edge sets.
+        for vertex in self.adjacency:
+            for neighbor in self.adjacency[vertex]:
+                # Add each edge
+                vertex.add_edge(neighbor)
+
+        # Go over the vertices again, but this time, set the `next` pointers
+        # for each edge. This will help us identify faces, but also be able to
+        # pick a random edge and see which face it bounds.
+        for vertex in self.adjacency:
+            for neighbor in self.adjacency[vertex]:
+                # If this edge has already been traversed, burn it to the ground.
+                # Abandon ship. ~Beware, ye who enter here~.
+                if vertex.edges[neighbor].traversed:
+                    break
+
+                # Track where we are in the graph. Also, make a list of vertices
+                # in the order we encounter them; this way, we can just stitch
+                # the vertices in the list together to determine directed edges.
+                # Finally, create the final list of edges.
+                current = None
+                current_neighbor = neighbor
+                cycle = []
+                edges = []
+
+                while current is not vertex:
+                    if current is None:
+                        current = vertex
+                     
+                    # Find the next in-order neighbor.
+                    next_neighbor = self._get_next_neighbor(current, current_neighbor)
+
+                    # Add the current neighbor to the cycle.
+                    cycle.append(current_neighbor)
+                    
+                    # Reset the tracking variables.
+                    current = current_neighbor
+                    current_neighbor = next_neighbor
+
+                # Get the list of cycles, and mark them as traversed.
+                for i in range(len(cycle)):
+                    # Here, we're just getting vertex at index `i` and the vertex
+                    # at index `i+1`. They must have an edge between them. Then,
+                    # we mark them as traversed, and continue.
+                    edge = cycle[i].edges[cycle[(i + 1) % len(cycle)]]
+                    edge.traversed = True
+                    edges.append(edge)
+
+                # Stitch the cycles together.
+                for j in range(len(edges)):
+                    # Again, we are getting the the edge at index `j` and the
+                    # edge at index `j+1`.
+                    edges[j].next = edges[(j + 1) % len(edges)]
+
+
+    def determine_faces(self):
+        """
+        Finds the faces of the graph.
+        :returns: None
+        """
+        pass
+
+    def show_map(self):
+        basemap = self.df.plot(color="w", edgecolor="lightgray")
+        self.centroids.plot(ax=basemap, markersize=1)
+
 
 if __name__ == "__main__":
-    he = HalfEdge("../test/data/tl_2016_19_cousub/tl_2016_19_cousub.shp")
+    he = HalfEdge("../test/data/2018_19_counties/county.shp")
