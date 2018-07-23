@@ -183,6 +183,9 @@ class HalfEdge:
             ordered = sorted(unordered, key=lambda n: n[1])
             self.adjacency[vertex] = tuple([tup[0] for tup in ordered])
 
+        # Initialize edge pointers so, if we need to, we can come back and find
+        # individual faces. Just keep going `next` -> `next` -> ... -> `next`
+        # until we get back to our starting place.
         self._edge_pointers()
 
     def _get_next_neighbor(self, current, neighbor):
