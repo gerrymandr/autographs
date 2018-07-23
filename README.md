@@ -27,10 +27,9 @@ Import as you normally would: `import autographs`. As an example program, we can
 (Check these off as they're completed)
 
 - [x] Finding faces of planar graphs
-- [ ] Complete enumeration of k-equipartitions
 - [ ] Making graphs
 - [ ] Grid graph stuff (?)
-- [ ] Null models
+- [ ] Tree-walk stuff
 
 ## Docs
 Forthcoming Overleaf documents with more information about the math we
