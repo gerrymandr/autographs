@@ -301,6 +301,9 @@ class HalfEdge:
 
 if __name__ == "__main__":
     he = HalfEdge("../test/data/2018_19_counties/county.shp")
+
+    # Test for faces.
     for face in he.faces:
         print(face)
+
     he.show_map()
