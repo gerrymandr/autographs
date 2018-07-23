@@ -1,5 +1,6 @@
 
 setup:
+	pip install -r requirements.txt
 	python setup.py develop
 
 build:
@@ -8,4 +9,3 @@ build:
 
 upload:
 	twine upload dist/*
-
