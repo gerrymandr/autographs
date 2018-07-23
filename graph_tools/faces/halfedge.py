@@ -3,7 +3,6 @@ import geopandas as gpd
 import pysal as ps
 import numpy as np
 import matplotlib.pyplot as plt
-from collections import deque
 
 
 class Vertex:

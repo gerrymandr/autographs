@@ -5,12 +5,13 @@ from graph_tools import VERSION
 reqs = [
     "numpy",
     "pysal",
-    "geopandas"
+    "geopandas",
+    "matplotlib"
 ]
 
 setup(
     name="graph_tools",
-    description="A collection of tools to make graph stuff easy",
+    description="A collection of tools to make graph stuff easy.",
     author="Metric Geometry and Gerrymandering Group",
     author_email="gerrymandr@gmail.com",
     url="https://github.com/gerrymandr/graph_tools",
