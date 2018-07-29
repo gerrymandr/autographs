@@ -76,3 +76,7 @@ junit.xml
 
 # Pytest cache
 .pytest_cache/
+
+## Ignore test data, but not their zipped versions. ##
+test/data/2018_19_counties/
+test/data/tl_2016_19_cousub/
