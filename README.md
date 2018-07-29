@@ -45,6 +45,11 @@ $ python setup.py install
 This will install all necessary dependencies and make `autographs` globally
 available (after a shell restart).
 
+# Contributing
+To contribute to this project, make yourself a fork and submit pull requests.
+You can also set up the development environment by running `make dev`.
+Otherwise, follow [this contributor's guide](http://bit.ly/2AlTKy7).
+
 # Usage
 Import as you normally would: `import autographs`. As an example program, we can
 find the faces of the dual graph induced by the counties of Iowa using a
