@@ -15,3 +15,6 @@ upload:
 dev:
 	echo "Running a dev installation to the default Python interpreter."
 	/usr/bin/env python setup.py install
+	echo "Decompressing test files."
+	unzip test/data/2018_19_counties.zip -d test/data
+	unzip test/data/tl_2016_19_cousub.zip -d test/data

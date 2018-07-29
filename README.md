@@ -48,7 +48,11 @@ available (after a shell restart).
 # Contributing
 To contribute to this project, make yourself a fork and submit pull requests.
 You can also set up the development environment by running `make dev`.
-Otherwise, follow [this contributor's guide](http://bit.ly/2AlTKy7).
+Otherwise, follow [this contributor's guide](http://bit.ly/2AlTKy7). Make runs
+the Python install script in development mode; this means that there is a
+symlink in the global packages folder that points to this directory, making
+all code (including live changes) available globally. Additionally, it unzips
+the test data in the `test/data` directory.
 
 # Usage
 Import as you normally would: `import autographs`. As an example program, we can
