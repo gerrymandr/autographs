@@ -139,7 +139,7 @@ class HalfEdge:
         """
         Properties.
         :adjacency:     Adjacency matrix with each vertex's neighbors ordered
-                        (by angle, with respect to the ray (0,1)).
+                        (by angle, with respect to the ray (0,0) to (0,1)).
         :faces:         Faces of the graph, denoted by edges.
         :centroids:     List of centroids.
         :df:            DataFrame for (insert block)-level data.
