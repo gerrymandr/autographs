@@ -9,12 +9,8 @@ with open("./README.md", "r") as f:
 with open("./CONTRIBUTING.md", "r") as f:
     CONTRIBUTING = f.read()
 
-reqs = [
-    "numpy",
-    "pysal",
-    "geopandas",
-    "matplotlib"
-]
+with open("./requirements.txt", "r") as f:
+    REQUIREMENTS = f.read().split("\n")
 
 setup(
     name="autographs",
@@ -24,5 +20,6 @@ setup(
     author_email="gerrymandr@gmail.com",
     url="https://github.com/gerrymandr/autographs",
     packages=find_packages(),
-    version=VERSION
+    version=VERSION,
+    install_requires=REQUIREMENTS
 )
