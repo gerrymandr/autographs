@@ -270,7 +270,7 @@ class HalfEdge:
                         current_edge = edges[0]
 
                     # Otherwise, denote the edges.
-                    tl, hl = current_edge.tail.label, current_edge.head.label
+                    tl, hl = current_edge.tail, current_edge.head
                     face.append((tl, hl))
 
                     # Sweet jesus I spent *such* a long time trying to figure out
@@ -302,10 +302,5 @@ class HalfEdge:
 
 
 if __name__ == "__main__":
-    he = HalfEdge("../test/data/2018_19_counties/county.shp")
-
-    # Test for faces.
-    for face in he.faces:
-        print(face)
-
+    he = HalfEdge("../../test/data/2018_19_counties/county.shp")
     he.show_map()
