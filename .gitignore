@@ -80,3 +80,4 @@ junit.xml
 ## Ignore test data, but not their zipped versions. ##
 test/data/2018_19_counties/
 test/data/tl_2016_19_cousub/
+test/data/cb_2017_02_sldl_500k
