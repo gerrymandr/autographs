@@ -310,7 +310,7 @@ class HalfEdge:
         :returns:   None
         """
         # Generate the basemap.
-        basemap = he.df.plot(color="w", edgecolor="lightgray")
+        basemap = self.df.plot(color="w", edgecolor="lightgray")
 
         # Plot each vertex. If the user wants labels, label the vertices as well.
         for vertex in self.adjacency:
@@ -320,7 +320,7 @@ class HalfEdge:
         
         # Since labellines doesn't like things being out of order, change the
         # ordering of the x and y coordinates based on which one's bigger.
-        for face in he.faces:
+        for face in self.faces:
             for edge in face:
                 x = []
                 
@@ -349,5 +349,4 @@ class HalfEdge:
 
 if __name__ == "__main__":
     he = HalfEdge("../../test/data/2018_19_counties/county.shp")
-
-    he.show_faces(labels=True)
+    he.show_faces()
