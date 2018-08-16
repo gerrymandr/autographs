@@ -3,10 +3,12 @@ setup:
 	pip install -r requirements.txt
 	python setup.py develop
 
-build:
+build: FORCE
 	echo "Building for distribution."
 	python setup.py sdist
 	python setup.py bdist_wheel
+
+FORCE:
 
 upload:
 	echo "Uploading to PyPi."
