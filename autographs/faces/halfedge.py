@@ -3,6 +3,7 @@ import geopandas as gpd
 import pysal as ps
 import numpy as np
 import matplotlib.pyplot as plt
+from labellines import labelLine
 
 
 class Vertex:
@@ -219,7 +220,7 @@ class HalfEdge:
                 # If this edge has already been traversed, burn the program to
                 # the ground. Abandon ship. ~Beware, ye who enter here.~
                 if vertex.edges[neighbor].traversed:
-                    break
+                    continue
 
                 # Track where we are in the graph. Also, make a list of vertices
                 # in the order we encounter them; this way, we can just stitch
@@ -254,7 +255,7 @@ class HalfEdge:
                     edge.traversed = True
                     edges.append(edge)
 
-                # Stitch the cycles together.
+                # Stitch the edges together.
                 for j in range(len(edges)):
                     # Again, we are getting the the edge at index `j` and the
                     # edge at index `j+1`.
@@ -271,7 +272,7 @@ class HalfEdge:
 
                     # Otherwise, denote the edges.
                     tl, hl = current_edge.tail, current_edge.head
-                    face.append((tl, hl))
+                    face.append(current_edge)
 
                     # Sweet jesus I spent *such* a long time trying to figure out
                     # why my code wouldn't finish running... and then I realized
@@ -298,9 +299,55 @@ class HalfEdge:
                 basemap.plot([vertex.x, neighbor.x], [vertex.y, neighbor.y], linestyle="-", linewidth=1)
 
         # Don't forget to show the plot!
-        plt.show()        
+        plt.axis("off")
+        plt.show()
 
+    def show_faces(self, labels=False):
+        """
+        Shows the underlying map overlaid with the faces. Useful for debugging.
+        Also, the labels might look a bit crowded, but just zoom in on the
+        figure to make everything look pretty.
+        :returns:   None
+        """
+        # Generate the basemap.
+        basemap = he.df.plot(color="w", edgecolor="lightgray")
+
+        # Plot each vertex. If the user wants labels, label the vertices as well.
+        for vertex in self.adjacency:
+            basemap.plot(vertex.x, vertex.y, "ko", markersize=4)
+            if labels:
+                basemap.text(vertex.x, vertex.y, vertex.label)
+        
+        # Since labellines doesn't like things being out of order, change the
+        # ordering of the x and y coordinates based on which one's bigger.
+        for face in he.faces:
+            for edge in face:
+                x = []
+                
+                if edge.tail.x > edge.head.x:
+                    x = [edge.head.x, edge.tail.x]
+                    y = [edge.head.y, edge.tail.y]
+                else:
+                    x = [edge.tail.x, edge.head.x]
+                    y = [edge.tail.y, edge.head.y]
+
+                # Plot the line.
+                line, = basemap.plot(x, y, "black")
+                
+                # If the user wants the lines to be labeled, add a label in the
+                # middle of the line.
+                if labels:
+                    labelLine(line, abs(edge.head.x + edge.tail.x) / 2, label=f"({edge.head.label},{edge.tail.label})")
+
+            x, y = [e.head.x for e in face], [e.head.y for e in face]
+            
+            if len(x) < 30:
+                basemap.fill(x, y, "red", alpha=0.25)
+
+        plt.axis("off")
+        plt.show()
 
 if __name__ == "__main__":
     he = HalfEdge("../../test/data/2018_19_counties/county.shp")
-    he.show_map()
+
+    he.show_faces(labels=True)
