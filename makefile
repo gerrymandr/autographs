@@ -20,3 +20,4 @@ dev:
 	echo "Decompressing test files."
 	unzip test/data/2018_19_counties.zip -d test/data
 	unzip test/data/tl_2016_19_cousub.zip -d test/data
+	unzip test/data/cb_2017_02_sldl_500k.zip -d test/data

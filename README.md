@@ -34,9 +34,18 @@ and you're set!
 You can test out your installation by opening an interactive Python shell and
 importing `autographs`.
 
-## Manually
-You can also install `autographs` manually. To do this, clone this repository,
-navigate to the root directory, and run
+## Manually (with `make`)
+Clone the repository, navigate to the root directory, and run
+
+```
+$ make setup
+```
+
+This sets up the project for development (or general use) and makes it
+globally available (after a shell restart).
+
+## Manually (without `make)
+To do this, clone this repository, navigate to the root directory, and run
 
 ```
 $ python setup.py install
